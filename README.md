@@ -194,6 +194,7 @@ def plot_pairplot(data, numerical_columns):
   - **`sns.pairplot()`**: Creates scatter plots for every pair of numerical variables, helping visualize how they correlate.
 
 ![pairplot Visualization](images/pro.png)
+
 ---
 
 ### 7. **Outlier Detection Using IQR (Interquartile Range)**
