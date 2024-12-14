@@ -153,6 +153,7 @@ def visualize_distributions(data, numerical_columns):
 ```
 - **Purpose**: Plots the distribution of each numerical column.
   - **`sns.histplot()`**: Creates a histogram with KDE (Kernel Density Estimation) overlaid to visualize the distribution of values.
+
 ![Distribution Visualization](images/dis.png)
 
 ---
@@ -191,6 +192,7 @@ def plot_pairplot(data, numerical_columns):
 ```
 - **Purpose**: Plots a pairplot to visualize the pairwise relationships between numerical columns.
   - **`sns.pairplot()`**: Creates scatter plots for every pair of numerical variables, helping visualize how they correlate.
+
 ![pairplot Visualization](images/pro.png)
 ---
 
@@ -247,6 +249,7 @@ def plot_boxplots(data, numerical_columns):
 ```
 - **Purpose**: Plots boxplots for each numerical column to visually inspect outliers.
   - **Boxplots** show the distribution of data, highlighting the median, quartiles, and outliers.
+
 ![Outliers Visualization](images/out.png)
 
 ---
@@ -366,6 +369,7 @@ for k in range(1, 11):
 ```
 - **Purpose**: Uses the Elbow Method to determine the optimal number of clusters for K-means clustering.
   - **Inertia** is the sum of squared distances from each point to its assigned cluster center. The "elbow" in the inertia plot indicates the optimal number of clusters.
+
 ![Elbow Visualization](images/elbo.png)
 
 ```python
@@ -382,6 +386,7 @@ kmeans_labels = kmeans.fit_predict(pca_data)
 sns.scatterplot(x=pca_data[:, 0], y=pca_data[:, 1], hue=kmeans_labels, palette='viridis')
 ```
 - **Purpose**: Plots the 2D scatter plot of the clusters in the PCA-transformed space.
+
 ![2D scatter Visualization](images/2d.png)
 
 ```python
@@ -390,6 +395,7 @@ ax = fig.add_subplot(111, projection='3d')
 scatter = ax.scatter(pca_data[:, 0], pca_data[:, 1], pca_data[:, 2], c=kmeans_labels, cmap='viridis')
 ```
 - **Purpose**: Plots the 3D scatter plot of the clusters.
+
 ![3D scatter Visualization](images/3d.png)
 
 ---
@@ -480,6 +486,7 @@ DBSCAN does not require the number of clusters to be specified and can find arbi
    Visualizes how the clusters are separated in the PCA-transformed data.
 
    **Example Visualization**:
+   
    ![2D Scatter](images/2d.png)
 
 2. **3D Scatter Plot**:
@@ -487,6 +494,7 @@ DBSCAN does not require the number of clusters to be specified and can find arbi
    Provides a more detailed view of the clusters in 3-dimensional space.
 
    **Example Visualization**:
+   
    ![3D Scatter](images/3d.png)
 
 ---
