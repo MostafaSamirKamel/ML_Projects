@@ -1,4 +1,102 @@
 
+
+
+# Step 1: Load and Preprocess the Data
+import pandas as pd
+from sklearn.preprocessing import StandardScaler
+
+# Load the dataset
+file_path = "Mall_Customers.csv"  # Update with your file's location
+data = pd.read_csv(file_path)
+
+# Inspect data
+print(data.info())
+print(data.describe())
+
+# Feature selection
+features = ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
+selected_data = data[features]
+
+# Normalize data
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(selected_data)
+
+print("Data preprocessing completed.")
+
+
+# Step 2: PCA for Dimensionality Reduction
+from sklearn.decomposition import PCA
+
+# Apply PCA
+pca = PCA(n_components=3)
+pca_data = pca.fit_transform(scaled_data)
+
+# Explained variance ratio
+print(f"Explained Variance Ratio: {pca.explained_variance_ratio_}")
+
+print("PCA completed.")
+
+
+# Step 3: K-means Clustering
+from sklearn.cluster import KMeans
+import matplotlib.pyplot as plt
+
+# Determine optimal number of clusters using the Elbow Method
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(pca_data)
+    inertia.append(kmeans.inertia_)
+
+# Plot the Elbow Method
+plt.plot(range(1, 11), inertia, marker='o')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Inertia')
+plt.title('Elbow Method')
+plt.show()
+
+# Apply K-means with optimal clusters
+optimal_clusters = 3  # Based on the elbow plot
+kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
+kmeans_labels = kmeans.fit_predict(pca_data)
+
+print("K-means clustering completed.")
+
+
+# Step 4: 2D and 3D Visualization
+import seaborn as sns
+from mpl_toolkits.mplot3d import Axes3D
+
+# 2D Scatter Plot
+sns.scatterplot(x=pca_data[:, 0], y=pca_data[:, 1], hue=kmeans_labels, palette='viridis')
+plt.title("2D Visualization of Clusters")
+plt.xlabel("PCA Component 1")
+plt.ylabel("PCA Component 2")
+plt.show()
+
+# 3D Scatter Plot
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(pca_data[:, 0], pca_data[:, 1], pca_data[:, 2], c=kmeans_labels, cmap='viridis')
+plt.title("3D Visualization of Clusters")
+plt.show()
+
+
+# Step 5: DBSCAN Clustering and Comparison
+from sklearn.cluster import DBSCAN
+from sklearn.metrics import silhouette_score
+
+# Apply DBSCAN
+dbscan = DBSCAN(eps=0.5, min_samples=5)
+dbscan_labels = dbscan.fit_predict(pca_data)
+
+# Compare with Silhouette Score
+kmeans_score = silhouette_score(pca_data, kmeans_labels)
+dbscan_score = silhouette_score(pca_data, dbscan_labels)
+
+print(f"K-means Silhouette Score: {kmeans_score}")
+print(f"DBSCAN Silhouette Score: {dbscan_score}")
+
 import streamlit as st
 import pandas as pd
 import numpy as np
