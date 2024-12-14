@@ -37,6 +37,8 @@ The project aims to perform **customer segmentation** based on their purchasing 
 
 ## **2. Code Explanation & Results**
 
+
+
 ### 1. **Loading the Dataset**
 ```python
 file_path = 'Mall_Customers.csv' 
@@ -75,9 +77,9 @@ Data columns (total 5 columns):
   4   Spending Score (1-100)  200 non-null    int64 
 dtypes: int64(4), object(1)
 memory usage: 7.9+ KB
-None
-  
+None  
 ```
+
 ### 3. **Statistical Summary**
 ```python
 def statistical_summary(data):
@@ -100,6 +102,7 @@ min      1.000000   18.000000           15.000000                1.000000
 75%    150.250000   49.000000           78.000000               73.000000
 max    200.000000   70.000000          137.000000               99.000000
 ```
+
 ---
 
 ### 4. **Label Encoding for Categorical Data**
@@ -150,8 +153,8 @@ def visualize_distributions(data, numerical_columns):
 ```
 - **Purpose**: Plots the distribution of each numerical column.
   - **`sns.histplot()`**: Creates a histogram with KDE (Kernel Density Estimation) overlaid to visualize the distribution of values.
+![Distribution Visualization](images/dis.png)
 
-![Distribution Visualization](C:\Users\Mostafa Samir\Desktop\ML_Project\dis.png)
 ---
 
 ### 6. **Correlation Analysis**
@@ -163,15 +166,256 @@ def correlation_analysis(data, numerical_columns):
 ```
 - **Purpose**: Computes the correlation matrix to identify relationships between numerical variables.
   - **`.corr()`** calculates the Pearson correlation coefficient between pairs of numerical columns. The value ranges from -1 (negative correlation) to 1 (positive correlation).
+- **Example Output**:
+```
+Correlation Matrix:
+                          Gender       Age  Annual Income (k$)  \
+Gender                  1.000000  0.060867            0.056410   
+Age                     0.060867  1.000000           -0.012398   
+Annual Income (k$)      0.056410 -0.012398            1.000000   
+Spending Score (1-100) -0.058109 -0.327227            0.009903   
+
+                        Spending Score (1-100)  
+Gender                               -0.058109  
+Age                                  -0.327227  
+Annual Income (k$)                    0.009903  
+Spending Score (1-100)                1.000000  
+
+```
   
 ```python
 def plot_pairplot(data, numerical_columns):
     sns.pairplot(data[numerical_columns])
     plt.suptitle("Pairplot of Numerical Variables", y=1.02)
     plt.show()
+```
+- **Purpose**: Plots a pairplot to visualize the pairwise relationships between numerical columns.
+  - **`sns.pairplot()`**: Creates scatter plots for every pair of numerical variables, helping visualize how they correlate.
+![pairplot Visualization](images/pro.png)
+---
 
+### 7. **Outlier Detection Using IQR (Interquartile Range)**
+```python
+def outlier_detection(data, numerical_columns):
+    outliers = {}
+    for col in numerical_columns:
+        Q1 = data[col].quantile(0.25)
+        Q3 = data[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        outliers[col] = data[(data[col] < lower_bound) | (data[col] > upper_bound)]
+        print(f"\nOutliers in {col}:")
+        print(outliers[col])
+    return outliers
+```
+- **Purpose**: Identifies outliers using the IQR method.
+  - The IQR (Interquartile Range) is the range between the 25th (Q1) and 75th (Q3) percentiles.
+  - Outliers are defined as values below `Q1 - 1.5 * IQR` or above `Q3 + 1.5 * IQR`.
+- **Example Output**:
+```
+Outliers in Gender:
+Empty DataFrame
+Columns: [CustomerID, Gender, Age, Annual Income (k$), Spending Score (1-100)]
+Index: []
+
+Outliers in Age:
+Empty DataFrame
+Columns: [CustomerID, Gender, Age, Annual Income (k$), Spending Score (1-100)]
+Index: []
+
+Outliers in Annual Income (k$):
+     CustomerID  Gender  Age  Annual Income (k$)  Spending Score (1-100)
+198         199       1   32                 137                      18
+199         200       1   30                 137                      83
+
+Outliers in Spending Score (1-100):
+Empty DataFrame
+Columns: [CustomerID, Gender, Age, Annual Income (k$), Spending Score (1-100)]
+Index: []
+```
+  
+```python
+def plot_boxplots(data, numerical_columns):
+    plt.figure(figsize=(15, 5))
+    for i, col in enumerate(numerical_columns):
+        plt.subplot(1, 4, i + 1)
+        sns.boxplot(data[col], color='orange')
+        plt.title(f"Boxplot of {col}")
+    plt.tight_layout()
+    plt.show()
+```
+- **Purpose**: Plots boxplots for each numerical column to visually inspect outliers.
+  - **Boxplots** show the distribution of data, highlighting the median, quartiles, and outliers.
+![Outliers Visualization](images/out.png)
+
+---
+
+### 8. **Handling Outliers**
+```python
+def remove_outliers(data, numerical_columns):
+    filtered_data = data.copy()
+    for col in numerical_columns:
+        Q1 = data[col].quantile(0.25)
+        Q3 = data[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        filtered_data = filtered_data[(filtered_data[col] >= lower_bound) & (filtered_data[col] <= upper_bound)]
+    return filtered_data
+```
+- **Purpose**: Removes rows with outliers from the dataset.
+  - Filters the data by excluding rows where the value in any numerical column falls outside the IQR-defined bounds.
+
+```python
+def cap_outliers(data, numerical_columns):
+    capped_data = data.copy()
+    for col in numerical_columns:
+        Q1 = data[col].quantile(0.25)
+        Q3 = data[col].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        capped_data[col] = capped_data[col].apply(lambda x: min(max(x, lower_bound), upper_bound))
+    return capped_data
+```
+- **Purpose**: Caps outliers instead of removing them.
+  - For each numerical column, values below the lower bound are set to the lower bound, and values above the upper bound are set to the upper bound.
+
+
+- **Example Output**:
+```
+Data after removing outliers:
+       CustomerID      Gender         Age  Annual Income (k$)  \
+count  198.000000  198.000000  198.000000          198.000000   
+mean    99.500000    0.434343   38.929293           59.787879   
+std     57.301832    0.496927   14.016852           25.237259   
+min      1.000000    0.000000   18.000000           15.000000   
+25%     50.250000    0.000000   28.250000           40.500000   
+50%     99.500000    0.000000   36.000000           61.000000   
+75%    148.750000    1.000000   49.000000           77.750000   
+max    198.000000    1.000000   70.000000          126.000000   
+
+       Spending Score (1-100)  
+count              198.000000  
+mean                50.196970  
+std                 25.746846  
+min                  1.000000  
+25%                 35.000000  
+50%                 50.000000  
+75%                 72.750000  
+max                 99.000000  
+
+Data after capping outliers:
+       CustomerID      Gender         Age  Annual Income (k$)  \
+count  200.000000  200.000000  200.000000          200.000000   
+mean   100.500000    0.440000   38.850000           60.517500   
+std     57.879185    0.497633   13.969007           26.143551   
+min      1.000000    0.000000   18.000000           15.000000   
+25%     50.750000    0.000000   28.750000           41.500000   
+50%    100.500000    0.000000   36.000000           61.500000   
+75%    150.250000    1.000000   49.000000           78.000000   
+max    200.000000    1.000000   70.000000          132.750000   
+
+       Spending Score (1-100)  
+count              200.000000  
+mean                50.200000  
+std                 25.823522  
+min                  1.000000  
+25%                 34.750000  
+50%                 50.000000  
+75%                 73.000000  
+max                 99.000000  
 ```
 
+---
+
+### 9. **Feature Selection and Normalization**
+```python
+from sklearn.preprocessing import StandardScaler
+
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(selected_data)
+```
+- **Purpose**: Normalizes the selected features using `StandardScaler`.
+  - **`StandardScaler`** standardizes the data by removing the mean and scaling to unit variance, making features comparable in scale.
+
+---
+
+### 10. **PCA (Principal Component Analysis)**
+```python
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=3)
+pca_data = pca.fit_transform(scaled_data)
+```
+- **Purpose**: Applies PCA to reduce the dimensionality of the data.
+  - The original dataset has multiple features, but PCA transforms it into fewer components (in this case, 3 components), preserving as much variance as possible.
+
+---
+
+### 11. **K-means Clustering**
+```python
+from sklearn.cluster import KMeans
+
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(pca_data)
+    inertia.append(kmeans.inertia_)
+```
+- **Purpose**: Uses the Elbow Method to determine the optimal number of clusters for K-means clustering.
+  - **Inertia** is the sum of squared distances from each point to its assigned cluster center. The "elbow" in the inertia plot indicates the optimal number of clusters.
+![Elbow Visualization](images/elbo.png)
+
+```python
+optimal_clusters = 3
+kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
+kmeans_labels = kmeans.fit_predict(pca_data)
+```
+- **Purpose**: Performs K-means clustering with the optimal number of clusters (3 in this case) and assigns cluster labels to the data.
+
+---
+
+### 12. **Visualization of Clusters**
+```python
+sns.scatterplot(x=pca_data[:, 0], y=pca_data[:, 1], hue=kmeans_labels, palette='viridis')
+```
+- **Purpose**: Plots the 2D scatter plot of the clusters in the PCA-transformed space.
+![2D scatter Visualization](images/2d.png)
+
+```python
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+scatter = ax.scatter(pca_data[:, 0], pca_data[:, 1], pca_data[:, 2], c=kmeans_labels, cmap='viridis')
+```
+- **Purpose**: Plots the 3D scatter plot of the clusters.
+![3D scatter Visualization](images/3d.png)
+
+---
+
+### 13. **DBSCAN Clustering**
+```python
+from sklearn.cluster import DBSCAN
+
+dbscan = DBSCAN(eps=0.5, min_samples=5)
+dbscan_labels = dbscan.fit_predict(pca_data)
+```
+- **Purpose**: Applies DBSCAN clustering.
+  - **DBSCAN** is a density-based clustering algorithm that doesn't require specifying the number of clusters, unlike K-means.
+
+```python
+from sklearn.metrics import silhouette_score
+
+kmeans_score = silhouette_score(pca_data, kmeans_labels)
+dbscan_score = silhouette_score(pca_data, dbscan_labels)
+
+print(f"K-means Silhouette Score: {kmeans_score}")
+print(f"DBSCAN Silhouette Score: {dbscan_score}")
+```
+- **Purpose**: Compares the clustering performance of K-means and DBSCAN using the **silhouette score**, which evaluates how well-defined the clusters are.
+
+---
 ---
 
 ## **3. K-means Algorithm Explanation**
@@ -236,14 +480,14 @@ DBSCAN does not require the number of clusters to be specified and can find arbi
    Visualizes how the clusters are separated in the PCA-transformed data.
 
    **Example Visualization**:
-   ![2D Scatter](path_to_image)
+   ![2D Scatter](images/2d.png)
 
 2. **3D Scatter Plot**:
 
    Provides a more detailed view of the clusters in 3-dimensional space.
 
    **Example Visualization**:
-   ![3D Scatter](path_to_image)
+   ![3D Scatter](images/3d.png)
 
 ---
 
