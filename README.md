@@ -421,7 +421,11 @@ print(f"K-means Silhouette Score: {kmeans_score}")
 print(f"DBSCAN Silhouette Score: {dbscan_score}")
 ```
 - **Purpose**: Compares the clustering performance of K-means and DBSCAN using the **silhouette score**, which evaluates how well-defined the clusters are.
-
+- **Example Output**:
+```
+K-means Silhouette Score: 0.32096602166390964
+DBSCAN Silhouette Score: 0.26124001995030866
+```
 ---
 ---
 
